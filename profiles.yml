@@ -1,0 +1,14 @@
+tap:
+    outputs:
+        dev:
+            dataset: testin_tap_glific
+            job_execution_timeout_seconds: 300
+            job_retries: 1
+            keyfile: /Users/dorjayyolmo/Dev/data/DDP/DBT/tap/dbtrepo/creds.json
+            location: US
+            method: service-account
+            priority: interactive
+            project: ddp-testing-007
+            threads: 1
+            type: bigquery
+    target: dev
