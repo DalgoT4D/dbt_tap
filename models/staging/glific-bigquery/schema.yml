@@ -1,0 +1,8 @@
+sources:
+    - name: glific
+      description: Tables here have the TAP glific bigquery data
+      schema: testing_glific_tap
+      tables:
+          - name: messages
+            identifier: messages
+            description: This has the raw messages data from the TAP buddy
