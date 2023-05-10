@@ -1,8 +1,8 @@
 sources:
     - name: crm
-      description: Tables here have the TAP crm postgres data
+      description: Tables here have the data from TAP crm (postgres) collected by the ops team
       schema: testing_glific_tap
       tables:
           - name: tabStudent
             identifier: tabStudent
-            description: This has the student details collected by TAP ops team
+            description: Student details
