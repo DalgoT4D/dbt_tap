@@ -7,3 +7,4 @@ profiles.yml
 .user.yml
 .DS_Store
 *.json
+venv/

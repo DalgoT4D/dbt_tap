@@ -6,3 +6,12 @@ sources:
           - name: tabStudent
             identifier: tabStudent
             description: Student details
+          - name: tabCourse
+            identifier: tabCourse
+            description: Course details
+          - name: tabBatch
+            identifier: tabBatch
+            description: Batch details
+          - name: tabSchool
+            identifier: tabSchool
+            description: School details
