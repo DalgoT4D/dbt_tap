@@ -1,30 +1,40 @@
 {{ config(materialized="table", schema="ddp_intermediate") }}
 
-select
-    messages.contact_phone,
-    messages.flow_label,
-    messages.flow_name,
-    messages.flow_uuid,
-    messages.flow_id,
+with cte as (
+    select
+        messages.contact_phone,
+        messages.flow_label,
+        messages.flow_name,
+        messages.flow_uuid,
+        messages.flow_id,
+        split(flow_label, ',')[safe_ordinal(1)] as activity_status,
+        split(flow_label, ',')[safe_ordinal(2)] as activity_unit_name,
+        trim(split(split(flow_label, ',')[safe_ordinal(2)], '-')[safe_ordinal(2)]) as unit,
+        trim(
+            split(split(flow_label, ',')[safe_ordinal(2)], '-')[safe_ordinal(3)]
+        ) as activity,
+    from {{ source("glific", "messages") }} as messages
+)
+
+select 
+    cte.*, 
     students.phone,
     students.name1,
-    split(flow_label, ',')[safe_ordinal(1)] as activity_status,
-    split(flow_label, ',')[safe_ordinal(2)] as activity_unit_name,
-    trim(split(split(flow_label, ',')[safe_ordinal(2)], '-')[safe_ordinal(2)]) as unit,
-    trim(
-        split(split(flow_label, ',')[safe_ordinal(2)], '-')[safe_ordinal(3)]
-    ) as activity,
-from {{ source("glific", "messages") }} as messages
+    case when activity_status = 'Activity_Access' then 1 else 0 end as Activity_Access,
+    case when activity_status = 'Activity_Sent' then 1 else 0 end as Activity_Sent,
+    case when activity_status = 'Activity_Submission' then 1 else 0 end as Activity_Submission
+from cte 
 inner join
     {{ source("crm", "tabStudent") }} as students
-    on messages.contact_phone = concat('91', students.phone)
+    on cte.contact_phone = concat('91', students.phone)
 where
-    (flow_label is not null)
+    (cte.flow_label is not null)
     and (
-        flow_label like '%Activity_Sent%'
-        or flow_label like '%Activity_Access%'
-        or flow_label like '%Activity_Submission%'
+        cte.flow_label like '%Activity_Sent%'
+        or cte.flow_label like '%Activity_Access%'
+        or cte.flow_label like '%Activity_Submission%'
     )
+    and (cte.unit is not null)
 
     /* types of flow label that needs to parsed
 -> Activity_Access, TLM22 - B1 - Activity 1
