@@ -8,3 +8,4 @@ profiles.yml
 .DS_Store
 *.json
 venv/
+.env
