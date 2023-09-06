@@ -1,29 +1,34 @@
-{{ config(materialized="table", schema="ddp_intermediate") }}
+{{ config(materialized="table", schema="dalgo_intermediate") }}
 
-with cte as (
-    select
-        messages.contact_phone,
-        messages.flow_label,
-        messages.flow_name,
-        messages.flow_uuid,
-        messages.flow_id,
-        split(flow_label, ',')[safe_ordinal(1)] as activity_status,
-        split(flow_label, ',')[safe_ordinal(2)] as activity_unit_name,
-        trim(split(split(flow_label, ',')[safe_ordinal(2)], '-')[safe_ordinal(2)]) as unit,
-        trim(
-            split(split(flow_label, ',')[safe_ordinal(2)], '-')[safe_ordinal(3)]
-        ) as activity,
-    from {{ source("glific", "messages") }} as messages
-)
+with
+    cte as (
+        select
+            messages.contact_phone,
+            messages.flow_label,
+            messages.flow_name,
+            messages.flow_uuid,
+            messages.flow_id,
+            split(flow_label, ',')[safe_ordinal(1)] as activity_status,
+            split(flow_label, ',')[safe_ordinal(2)] as activity_unit_name,
+            trim(
+                split(split(flow_label, ',')[safe_ordinal(2)], '-')[safe_ordinal(2)]
+            ) as unit,
+            trim(
+                split(split(flow_label, ',')[safe_ordinal(2)], '-')[safe_ordinal(3)]
+            ) as activity,
+        from {{ source("glific", "messages") }} as messages
+    )
 
-select 
-    cte.*, 
+select
+    cte.*,
     students.phone,
     students.name1,
-    case when activity_status = 'Activity_Access' then 1 else 0 end as Activity_Access,
-    case when activity_status = 'Activity_Sent' then 1 else 0 end as Activity_Sent,
-    case when activity_status = 'Activity_Submission' then 1 else 0 end as Activity_Submission
-from cte 
+    case when activity_status = 'Activity_Access' then 1 else 0 end as activity_access,
+    case when activity_status = 'Activity_Sent' then 1 else 0 end as activity_sent,
+    case
+        when activity_status = 'Activity_Submission' then 1 else 0
+    end as activity_submission
+from cte
 inner join
     {{ source("crm", "tabStudent") }} as students
     on cte.contact_phone = concat('91', students.phone)
@@ -36,7 +41,7 @@ where
     )
     and (cte.unit is not null)
 
-    /* types of flow label that needs to parsed
+/* types of flow label that needs to parsed
 -> Activity_Access, TLM22 - B1 - Activity 1
 -> Activity_Access, TLM22 - B1 - Activity 2,TLM22 - B2 - Activity 1
 -> Units have 'B' as prefix so B1, B2
@@ -46,4 +51,3 @@ where
     - TAPBuddy_Student_Weekly_Performance_Details2 (Step 3)
     - Submission_link_extraction_for_any_Activity_TLM22 (Aggregate of all steps above)
 */
-    
