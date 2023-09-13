@@ -1,4 +1,4 @@
-{{ config(materialized="table", schema="prod") }}
+{{ config(materialized="table", schema="intermediate") }}
 
 select *
 from {{ ref("crm_students_merged") }} as students
@@ -9,4 +9,3 @@ where
     messages.activity_status is not null
     and students.course_id = messages.course_id
     and students.batch_id = messages.batch_id
-    

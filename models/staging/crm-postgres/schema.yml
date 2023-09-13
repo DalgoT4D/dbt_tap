@@ -1,7 +1,7 @@
 sources:
     - name: crm
       description: Tables here have the data from TAP crm (postgres) collected by the ops team
-      schema: dalgo_staging
+      schema: tap_staging
       tables:
           - name: tabStudent
             identifier: tabStudent
