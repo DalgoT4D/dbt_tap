@@ -1,4 +1,4 @@
-{{ config(materialized="table", schema="dalgo_intermediate") }}
+{{ config(materialized="table", schema="intermediate") }}
 
 -- The date filter on inserted_at marks the start of the new (2023) registration cycle
 -- activity status can be Activity_Submission, Activity_Sent and Activity_Access
