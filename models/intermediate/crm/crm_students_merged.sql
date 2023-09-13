@@ -1,4 +1,4 @@
-{{ config(materialized="table", schema="dalgo_intermediate") }}
+{{ config(materialized="table", schema="intermediate") }}
 
 with
     schools as (
