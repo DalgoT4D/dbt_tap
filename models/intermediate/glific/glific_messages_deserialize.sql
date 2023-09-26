@@ -7,9 +7,10 @@
 
 SELECT
     id,
+    profile_id,
     contact_phone,
     flow_label,
-    TYPE AS message_type,
+    `type` AS message_type,
     REGEXP_SUBSTR(
         flow_label,
         'Activity\\w+',
