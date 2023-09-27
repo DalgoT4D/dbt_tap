@@ -18,8 +18,12 @@ SELECT
     messages.activity_status,
     messages.message_type,
     messages.activity_type,
-    messages.activity_no,
-    messages.unit_no,
+    CAST(
+        messages.activity_no AS INT
+    ) AS activity_no,
+    CAST(
+        messages.unit_no AS INT
+    ) AS unit_no,
     messages.unit,
     messages.activity,
     CASE
