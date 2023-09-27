@@ -35,6 +35,28 @@ SELECT
         1,
         2
     ) AS batch_id,
+    REGEXP_SUBSTR(
+        REGEXP_SUBSTR(
+            flow_label,
+            'TLM\\d{2,} - [UB]\\d{1,} - Activity \\d{1,}',
+            1,
+            1
+        ),
+        '[UB]\\d{1,}',
+        1,
+        1
+    ) AS unit,
+    REGEXP_SUBSTR(
+        REGEXP_SUBSTR(
+            flow_label,
+            'TLM\\d{2,} - [UB]\\d{1,} - Activity \\d{1,}',
+            1,
+            1
+        ),
+        'Activity \\d{1,}$',
+        1,
+        1
+    ) AS activity,
     inserted_at
 FROM
     {{ source(
