@@ -73,7 +73,9 @@ SELECT
         WHEN unit LIKE 'U%' THEN "student"
         WHEN unit LIKE 'B%'
         AND activity = 'Activity 5' THEN "pretest"
-        ELSE "engagement"
+        WHEN unit LIKE 'B%'
+        AND activity != 'Activity 5' THEN "engagement"
+        ELSE ''
     END AS activity_type,
     REGEXP_SUBSTR(
         activity,
