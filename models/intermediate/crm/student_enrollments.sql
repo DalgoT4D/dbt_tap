@@ -53,6 +53,7 @@ enrollments AS (
         batch AS batch_id,
         batches.start_date AS batch_start_date,
         batches.end_date AS batch_end_date,
+        batches.title AS batch_title
     FROM
         {{ source(
             "crm",
@@ -80,7 +81,12 @@ SELECT
     schools.school_type,
     schools.school_model,
     schools.school_name,
-    enrollments.*
+    enrollments.*,
+    EXTRACT(
+        YEAR
+        FROM
+            batch_start_date
+    ) AS batch_year
 FROM
     {{ source(
         "crm",
