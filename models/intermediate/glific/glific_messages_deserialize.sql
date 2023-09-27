@@ -66,11 +66,6 @@ WITH cte AS (
         ) }}
     WHERE
         inserted_at >= '2023-07-15T00:00:00.000000'
-        AND id IN (
-            40743060,
-            39120069,
-            36088150
-        )
 )
 SELECT
     *,
