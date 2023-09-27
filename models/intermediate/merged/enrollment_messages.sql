@@ -17,6 +17,11 @@ SELECT
     messages.id AS message_id,
     messages.activity_status,
     messages.message_type,
+    messages.activity_type,
+    messages.activity_no,
+    messages.unit_no,
+    messages.unit,
+    messages.activity,
     CASE
         WHEN messages.activity_status = 'Activity_Sent' THEN 1
         ELSE 0
