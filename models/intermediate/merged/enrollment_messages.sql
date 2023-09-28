@@ -22,6 +22,8 @@ SELECT
     messages.activity_status,
     messages.message_type,
     messages.activity_type,
+    messages.profile_id AS msg_profile_id,
+    messages.inserted_at,
     CAST(
         messages.activity_no AS INT
     ) AS activity_no,
