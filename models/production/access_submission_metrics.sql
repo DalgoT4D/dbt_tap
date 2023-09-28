@@ -20,8 +20,6 @@ WITH cte AS (
         ) AS row_num
     FROM
         {{ ref("enrollment_messages") }}
-    WHERE
-        student_id = 'ST00004551'
 )
 SELECT
     *
