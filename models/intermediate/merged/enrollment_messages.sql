@@ -7,6 +7,8 @@ SELECT
     enrollments.student_id,
     enrollments.phone,
     enrollments.profile_id,
+    enrollments.gender,
+    enrollments.grade,
     enrollments.course_id,
     enrollments.course_name1,
     enrollments.course_name2,

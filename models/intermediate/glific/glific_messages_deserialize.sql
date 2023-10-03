@@ -65,7 +65,8 @@ WITH cte AS (
             "messages"
         ) }}
     WHERE
-        inserted_at >= '2023-07-15T00:00:00.000000'
+        {# inserted_at >= '2023-07-15T00:00:00.000000' -- when the new cycle start for 2023 #}
+        inserted_at >= '2023-09-28T00:00:00.000000' -- this because we did structural change in crm and had to change the flow embeddings which happened come into account from this dat
 )
 SELECT
     *,
