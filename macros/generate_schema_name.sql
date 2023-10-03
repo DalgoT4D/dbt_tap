@@ -3,7 +3,7 @@
     {%- set default_schema = target.schema -%}
     {%- if custom_schema_name is none -%} {{ default_schema }}
 
-    {%- else -%} {{"dalgo"}}_{{ custom_schema_name }}
+    {%- else -%} {{ "tap" }}_{{ custom_schema_name }}
 
     {%- endif -%}
 
