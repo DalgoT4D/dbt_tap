@@ -1,6 +1,7 @@
 {{ config(
-    materialized = "table",
-    schema = "intermediate"
+    materialized = "incremental",
+    schema = "intermediate",
+    unique_key = "enrollment_id"
 ) }}
 
 WITH schools AS (
@@ -12,10 +13,7 @@ WITH schools AS (
         model AS school_model,
         name1 AS school_name
     FROM
-        {{ source(
-            "crm",
-            "tabSchool"
-        ) }}
+        {{ ref("school") }}
 ),
 courses AS (
     SELECT
@@ -23,10 +21,7 @@ courses AS (
         name1,
         name2,
     FROM
-        {{ source(
-            "crm",
-            "tabCourse"
-        ) }}
+        {{ ref("course") }}
 ),
 batches AS (
     SELECT
@@ -36,16 +31,14 @@ batches AS (
         start_date,
         end_date
     FROM
-        {{ source(
-            "crm",
-            "tabBatch"
-        ) }}
+        {{ ref("batch") }}
 ),
 enrollments AS (
     SELECT
         enrollment.name AS enrollment_id,
         parenttype,
         parentfield,
+        modified,
         `parent` AS student_id,
         course AS course_id,
         courses.name1 AS course_name1,
@@ -55,10 +48,7 @@ enrollments AS (
         batches.end_date AS batch_end_date,
         batches.title AS batch_title
     FROM
-        {{ source(
-            "crm",
-            "tabEnrollment"
-        ) }} AS enrollment
+        {{ ref("enrollment") }} AS enrollment
         LEFT JOIN batches
         ON batches.id = enrollment.batch
         LEFT JOIN courses
@@ -88,11 +78,20 @@ SELECT
             batch_start_date
     ) AS batch_year
 FROM
-    {{ source(
-        "crm",
-        "tabStudent"
-    ) }} AS students
+    {{ ref("student") }} AS students
     LEFT JOIN schools
     ON schools.id = students.school_id
     LEFT JOIN enrollments
     ON enrollments.student_id = students.name
+
+{% if is_incremental() %}
+WHERE
+    enrollments.modified > (
+        SELECT
+            MAX(
+                enrollments.modified
+            )
+        FROM
+            {{ this }}
+    )
+{% endif %}
