@@ -11,7 +11,8 @@ WITH schools AS (
         city AS school_city,
         `type` AS school_type,
         model AS school_model,
-        name1 AS school_name
+        name1 AS school_name,
+        modified AS school_modified
     FROM
         {{ ref("school") }}
 ),
@@ -20,6 +21,7 @@ courses AS (
         `name` AS id,
         name1,
         name2,
+        modified AS course_modified
     FROM
         {{ ref("course") }}
 ),
@@ -29,7 +31,8 @@ batches AS (
         name1,
         title,
         start_date,
-        end_date
+        end_date,
+        modified AS batch_modified
     FROM
         {{ ref("batch") }}
 ),
@@ -43,10 +46,12 @@ enrollments AS (
         course AS course_id,
         courses.name1 AS course_name1,
         courses.name2 AS course_name2,
+        courses.course_modified,
         batch AS batch_id,
         batches.start_date AS batch_start_date,
         batches.end_date AS batch_end_date,
-        batches.title AS batch_title
+        batches.title AS batch_title,
+        batches.batch_modified,
     FROM
         {{ ref("enrollment") }} AS enrollment
         LEFT JOIN batches
@@ -71,12 +76,16 @@ SELECT
     schools.school_type,
     schools.school_model,
     schools.school_name,
+    schools.school_modified,
     enrollments.*,
     EXTRACT(
         YEAR
         FROM
             batch_start_date
-    ) AS batch_year
+    ) AS batch_year,
+    {{ dbt_date.now(
+        tz = "UTC"
+    ) }} AS last_sync_time,
 FROM
     {{ ref("student") }} AS students
     LEFT JOIN schools
@@ -86,10 +95,18 @@ FROM
 
 {% if is_incremental() %}
 WHERE
-    enrollments.modified > (
+    TIMESTAMP(
+        GREATEST(
+            enrollments.batch_modified,
+            enrollments.course_modified,
+            schools.school_modified,
+            enrollments.modified,
+            students.modified
+        )
+    ) > (
         SELECT
             MAX(
-                enrollments.modified
+                last_sync_time
             )
         FROM
             {{ this }}
