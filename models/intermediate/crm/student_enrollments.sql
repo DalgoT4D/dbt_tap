@@ -14,7 +14,10 @@ WITH schools AS (
         name1 AS school_name,
         modified AS school_modified
     FROM
-        {{ ref("school") }}
+        {{ source(
+            "crm",
+            "tabSchool"
+        ) }}
 ),
 courses AS (
     SELECT
@@ -23,7 +26,10 @@ courses AS (
         name2,
         modified AS course_modified
     FROM
-        {{ ref("course") }}
+        {{ source(
+            "crm",
+            "tabCourse"
+        ) }}
 ),
 batches AS (
     SELECT
@@ -34,7 +40,10 @@ batches AS (
         end_date,
         modified AS batch_modified
     FROM
-        {{ ref("batch") }}
+        {{ source(
+            "crm",
+            "tabBatch"
+        ) }}
 ),
 enrollments AS (
     SELECT
@@ -53,7 +62,10 @@ enrollments AS (
         batches.title AS batch_title,
         batches.batch_modified,
     FROM
-        {{ ref("enrollment") }} AS enrollment
+        {{ source(
+            "crm",
+            "tabEnrollment"
+        ) }} AS enrollment
         LEFT JOIN batches
         ON batches.id = enrollment.batch
         LEFT JOIN courses
@@ -83,11 +95,18 @@ SELECT
         FROM
             batch_start_date
     ) AS batch_year,
-    {{ dbt_date.now(
-        tz = "UTC"
-    ) }} AS last_sync_time,
+    GREATEST(
+        enrollments.batch_modified,
+        enrollments.course_modified,
+        schools.school_modified,
+        enrollments.modified,
+        students.modified
+    ) AS last_sync_time
 FROM
-    {{ ref("student") }} AS students
+    {{ source(
+        "crm",
+        "tabStudent"
+    ) }} AS students
     LEFT JOIN schools
     ON schools.id = students.school_id
     LEFT JOIN enrollments
@@ -95,14 +114,12 @@ FROM
 
 {% if is_incremental() %}
 WHERE
-    TIMESTAMP(
-        GREATEST(
-            enrollments.batch_modified,
-            enrollments.course_modified,
-            schools.school_modified,
-            enrollments.modified,
-            students.modified
-        )
+    GREATEST(
+        enrollments.batch_modified,
+        enrollments.course_modified,
+        schools.school_modified,
+        enrollments.modified,
+        students.modified
     ) > (
         SELECT
             MAX(
