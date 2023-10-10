@@ -1,6 +1,7 @@
 {{ config(
-    materialized = "table",
-    schema = "intermediate"
+    materialized = "incremental",
+    schema = "intermediate",
+    unique_key = "id"
 ) }}
 -- The date filter on inserted_at marks the start of the new (2023) registration cycle
 -- activity status can be Activity_Submission, Activity_Sent and Activity_Access
@@ -66,7 +67,16 @@ WITH cte AS (
         ) }}
     WHERE
         {# inserted_at >= '2023-07-15T00:00:00.000000' -- when the new cycle start for 2023 #}
-        inserted_at >= '2023-09-28T00:00:00.000000' -- this because we did structural change in crm and had to change the flow embeddings which happened come into account from this dat
+        inserted_at >= '2023-09-28T00:00:00.000000' -- this because we did structural change in crm and had to change the flow embeddings which happened come into account from this data
+
+{% if is_incremental() %}
+AND inserted_at > (
+    SELECT
+        MAX(inserted_at)
+    FROM
+        {{ this }}
+)
+{% endif %}
 )
 SELECT
     *,
