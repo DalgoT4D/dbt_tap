@@ -156,8 +156,7 @@ duplicated_merge AS (
     SELECT
         *,
         ROW_NUMBER() over (
-            PARTITION BY message_id,
-            phone,
+            PARTITION BY phone,
             enrollment_id,
             msg_profile_id,
             course_id,
