@@ -11,6 +11,7 @@ WITH merged_enrollment_messages AS (
 
     SELECT
         enrollments.student_id,
+        enrollments.student_name,
         enrollments.enrollment_id,
         enrollments.phone,
         enrollments.profile_id,
@@ -84,6 +85,7 @@ AND (
 UNION ALL
 SELECT
     enrollments.student_id,
+    enrollments.student_name,
     enrollments.enrollment_id,
     enrollments.phone,
     enrollments.profile_id,

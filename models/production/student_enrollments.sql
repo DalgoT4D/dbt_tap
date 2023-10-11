@@ -76,6 +76,7 @@ enrollments AS (
 )
 SELECT
     phone,
+    students.name1 AS student_name,
     profile_id,
     alt_phone,
     grade,
