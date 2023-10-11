@@ -3,8 +3,7 @@
     schema = "intermediate",
     unique_key = "id"
 ) }}
--- The date filter on inserted_at marks the start of the new (2023) registration cycle
--- activity status can be Activity_Submission, Activity_Sent and Activity_Access
+
 WITH cte AS (
 
     SELECT
@@ -14,24 +13,28 @@ WITH cte AS (
         flow_label,
         `type` AS message_type,
         REGEXP_SUBSTR(
+            -- activity status; [Activity_Submission, Activity_Sent, Activity_Access]
             flow_label,
             'Activity\\w+',
             1,
             1
         ) AS activity_status,
         REGEXP_SUBSTR(
+            -- course ; eg CR00000001
             flow_label,
             'CR\\d+$',
             1,
             1
         ) AS course_id,
         REGEXP_SUBSTR(
+            -- enrolled batch (there are two batche ids embedded in flow label): first occurrence ; eg BT00000002
             flow_label,
             'BT\\d+',
             1,
             1
         ) AS enrolled_batch_id,
         REGEXP_SUBSTR(
+            -- current batch: second occurrence ; eg BT00000001
             flow_label,
             'BT\\d+',
             1,
@@ -39,23 +42,27 @@ WITH cte AS (
         ) AS batch_id,
         REGEXP_SUBSTR(
             REGEXP_SUBSTR(
+                -- this regex has information about activity no and unit no
                 flow_label,
                 'TLM\\d{2,} - [UB]\\d{1,} - Activity \\d{1,}',
                 1,
                 1
             ),
             '[UB]\\d{1,}',
+            -- unit ; eg U1 or B1
             1,
             1
         ) AS unit,
         REGEXP_SUBSTR(
             REGEXP_SUBSTR(
+                -- this regex has information about activity no and unit no
                 flow_label,
                 'TLM\\d{2,} - [UB]\\d{1,} - Activity \\d{1,}',
                 1,
                 1
             ),
             'Activity \\d{1,}$',
+            -- activity ; eg Activity 2
             1,
             1
         ) AS activity,
@@ -67,7 +74,7 @@ WITH cte AS (
         ) }}
     WHERE
         {# inserted_at >= '2023-07-15T00:00:00.000000' -- when the new cycle start for 2023 #}
-        inserted_at >= '2023-09-28T00:00:00.000000' -- this because we did structural change in crm and had to change the flow embeddings which happened come into account from this data
+        inserted_at >= '2023-09-28T00:00:00.000000' -- this because we did structural change in crm and had to change the flow embeddings to account for it. The changes were done on this date
 
 {% if is_incremental() %}
 AND inserted_at > (
@@ -80,6 +87,10 @@ AND inserted_at > (
 )
 SELECT
     *,
+    -- Categorizing activities into "student", "pretest" and "engagement" (TAPs logic)
+    -- "student" : activities in unit starting with 'U'
+    -- "pretest" : activities in unit starting with 'B' and having activity no 5
+    -- "engagement" : activities in unit starting with 'B' and having activity no != 5
     CASE
         WHEN unit LIKE 'U%' THEN "student"
         WHEN unit LIKE 'B%'
