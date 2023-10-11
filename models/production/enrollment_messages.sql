@@ -3,7 +3,10 @@
     schema = "prod",
     unique_key = ["message_id", "enrollment_id"]
 ) }}
-
+-- this model merges the frappe enrollment data with glific messages table on phone, course, batch, profile_id (if available)
+-- incremental model on this considers two cases and unions them
+----- when a new message(s) comes in
+----- when a new enrollment(s) comes in
 WITH merged_enrollment_messages AS (
 
     SELECT
@@ -153,6 +156,7 @@ AND (
 {% endif %}
 ),
 duplicated_merge AS (
+    -- this removes the duplicate messages on parameters below
     SELECT
         *,
         ROW_NUMBER() over (

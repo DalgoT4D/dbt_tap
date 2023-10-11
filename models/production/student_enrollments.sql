@@ -1,9 +1,9 @@
 {{ config(
     materialized = "incremental",
-    schema = "intermediate",
+    schema = "prod",
     unique_key = "enrollment_id"
 ) }}
-
+-- this models merges courses, batches, schools and student details available on frappe for each enrollment
 WITH schools AS (
 
     SELECT
