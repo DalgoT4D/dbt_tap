@@ -1,7 +1,7 @@
 {{ config(
     materialized = "incremental",
     schema = "prod",
-    unique_key = ["message_id", "enrollment_id"]
+    unique_key = ["message_id", "enrollment_id", "msg_profile_id", "student_id", "unit", "activity", "activity_status"]
 ) }}
 -- this model merges the frappe enrollment data with glific messages table on phone, course, batch, profile_id (if available)
 -- incremental model on this considers two cases and unions them
