@@ -74,7 +74,9 @@ WITH cte AS (
         ) }}
     WHERE
         {# inserted_at >= '2023-07-15T00:00:00.000000' -- when the new cycle start for 2023 #}
-        inserted_at >= '2023-09-28T00:00:00.000000' -- this because we did structural change in crm and had to change the flow embeddings to account for it. The changes were done on this date
+        {# inserted_at >= '2023-09-28T00:00:00.000000' -- this because we did structural change in crm and had to change the flow embeddings to account for it. The changes were done on this date #}
+        {# inserted_at >= '2023-10-01T00:00:00.000000' -- this is to validate dashboard we need to have the same data as in the old dashboards #}
+        inserted_at >= '2023-09-28T00:00:00.000000' -- this is to validate dashboard we need to have the same data as in the old dashboards
 
 {% if is_incremental() %}
 AND inserted_at > (
