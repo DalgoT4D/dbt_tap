@@ -1,6 +1,9 @@
 {{ config(
     materialized = "incremental",
     schema = "intermediate",
+    partition_by ={ "field": "bq_inserted_at",
+    "data_type": "timestamp",
+    "granularity": "day" },
     unique_key = "id"
 ) }}
 
@@ -66,7 +69,14 @@ WITH cte AS (
             1,
             1
         ) AS activity,
-        inserted_at
+        inserted_at,
+        updated_at,
+        bq_inserted_at,
+        ROW_NUMBER() over (
+            PARTITION BY id
+            ORDER BY
+                bq_inserted_at DESC
+        ) AS row_no
     FROM
         {{ source(
             "glific",
@@ -79,9 +89,9 @@ WITH cte AS (
         inserted_at >= '2023-09-28T00:00:00.000000' -- this is to validate dashboard we need to have the same data as in the old dashboards
 
 {% if is_incremental() %}
-AND inserted_at > (
+AND bq_inserted_at > (
     SELECT
-        MAX(inserted_at)
+        MAX(bq_inserted_at)
     FROM
         {{ this }}
 )
@@ -115,3 +125,5 @@ SELECT
     ) AS unit_no,
 FROM
     cte
+WHERE
+    row_no = 1

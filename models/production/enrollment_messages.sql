@@ -36,6 +36,8 @@ WITH merged_enrollment_messages AS (
         messages.activity_type,
         messages.profile_id AS msg_profile_id,
         messages.inserted_at,
+        messages.bq_inserted_at,
+        messages.updated_at,
         CAST(
             messages.activity_no AS INT
         ) AS activity_no,
@@ -75,9 +77,9 @@ WITH merged_enrollment_messages AS (
 
 {% if is_incremental() %}
 AND (
-    inserted_at > (
+    bq_inserted_at > (
         SELECT
-            MAX(inserted_at)
+            MAX(bq_inserted_at)
         FROM
             {{ this }}
     )
@@ -111,6 +113,8 @@ SELECT
     messages.activity_type,
     messages.profile_id AS msg_profile_id,
     messages.inserted_at,
+    messages.bq_inserted_at,
+    messages.updated_at,
     CAST(
         messages.activity_no AS INT
     ) AS activity_no,
@@ -173,7 +177,7 @@ duplicated_merge AS (
             activity,
             activity_status
             ORDER BY
-                inserted_at
+                bq_inserted_at
         ) AS row_no
     FROM
         merged_enrollment_messages
