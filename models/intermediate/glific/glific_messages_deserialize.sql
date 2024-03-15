@@ -127,3 +127,8 @@ FROM
     cte
 WHERE
     row_no = 1
+    AND activity_status IN (
+        'Activity_Submission',
+        'Activity_Sent',
+        'Activity_Access'
+    ) -- we dont care about messages that dont have these statuses
