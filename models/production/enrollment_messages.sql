@@ -144,7 +144,7 @@ FROM
             enrollments.phone
         ) = messages.contact_phone
         AND enrollments.course_id = messages.course_id
-        AND enrollments.batch_id = messages.batch_id
+        AND enrollments.batch_id = messages.enrolled_batch_id
         OR enrollments.profile_id = CAST(
             messages.profile_id AS STRING
         )
