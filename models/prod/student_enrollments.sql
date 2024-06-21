@@ -1,7 +1,7 @@
 {{ config(
     materialized = "table",
 ) }}
--- this models merges courses, batches, schools and student details available on frappe for each enrollment
+-- this merges enrollments with students table
 
 SELECT
     students.*,
@@ -9,6 +9,7 @@ SELECT
     enrollments.enrollment_modified,
     enrollments.course_id,
     enrollments.course_name1,
+    enrollments.course_name2,
     enrollments.batch_id,
     enrollments.batch_start_date,
     enrollments.batch_end_date,

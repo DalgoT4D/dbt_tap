@@ -8,6 +8,7 @@ SELECT
     enrollment.modified AS enrollment_modified,
     course.name AS course_id,
     course.name1 AS course_name1,
+    course.name2 AS course_name2,
     batch.name AS batch_id,
     batch.start_date AS batch_start_date,
     batch.end_date AS batch_end_date,
