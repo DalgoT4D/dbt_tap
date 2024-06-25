@@ -58,14 +58,26 @@ WITH merged_enrollment_messages AS (
         {{ ref("student_enrollments") }} AS enrollments
         INNER JOIN {{ ref("glific_messages_deserialize") }} AS messages
         ON (
-            CONCAT(
-                '91',
-                enrollments.phone
-            ) = messages.contact_phone
-            AND enrollments.course_id = messages.course_id
-            AND enrollments.batch_id = messages.enrolled_batch_id
-            OR enrollments.profile_id = CAST(
-                messages.profile_id AS STRING
+            (
+                messages.profile_id IS NULL
+                AND CONCAT(
+                    '91',
+                    enrollments.phone
+                ) = messages.contact_phone
+                AND enrollments.course_id = messages.course_id
+                AND enrollments.batch_id = messages.enrolled_batch_id
+            )
+            OR (
+                messages.profile_id IS NOT NULL
+                AND enrollments.profile_id = CAST(
+                    messages.profile_id AS STRING
+                )
+                AND CONCAT(
+                    '91',
+                    enrollments.phone
+                ) = messages.contact_phone
+                AND enrollments.course_id = messages.course_id
+                AND enrollments.batch_id = messages.enrolled_batch_id
             )
         )
     WHERE
