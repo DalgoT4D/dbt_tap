@@ -65,7 +65,7 @@ WITH merged_enrollment_messages AS (
                     enrollments.phone
                 ) = messages.contact_phone
                 AND enrollments.course_id = messages.course_id
-                AND enrollments.batch_id = messages.enrolled_batch_id
+                AND enrollments.batch_id = messages.batch_id -- match with second occurence of flow label
             )
             OR (
                 messages.profile_id IS NOT NULL
@@ -77,7 +77,7 @@ WITH merged_enrollment_messages AS (
                     enrollments.phone
                 ) = messages.contact_phone
                 AND enrollments.course_id = messages.course_id
-                AND enrollments.batch_id = messages.enrolled_batch_id
+                AND enrollments.batch_id = messages.batch_id -- match with second occurence of flow label
             )
         )
     WHERE
