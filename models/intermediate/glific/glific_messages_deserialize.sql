@@ -30,18 +30,27 @@ WITH cte AS (
             1
         ) AS course_id,
         REGEXP_SUBSTR(
-            -- enrolled batch (there are two batche ids embedded in flow label): first occurrence ; eg BT00000002
+            -- enrolled batch (there are two batch ids embedded in flow label): first occurrence ; eg BT00000002
             flow_label,
             'BT\\d+',
             1,
             1
         ) AS enrolled_batch_id,
-        REGEXP_SUBSTR(
-            -- current batch: second occurrence ; eg BT00000001
-            flow_label,
-            'BT\\d+',
-            1,
-            2
+        COALESCE(
+            REGEXP_SUBSTR(
+                -- current batch: second occurrence ; eg BT00000001
+                flow_label,
+                'BT\\d+',
+                1,
+                2
+            ),
+            REGEXP_SUBSTR(
+                -- enrolled batch (if current batch is not present take the enrolled batch)
+                flow_label,
+                'BT\\d+',
+                1,
+                1
+            )
         ) AS batch_id,
         REGEXP_SUBSTR(
             REGEXP_SUBSTR(
