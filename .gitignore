@@ -2,6 +2,7 @@
 target/
 dbt_packages/
 logs/
+analyses/
 profiles.yml
 .vscode/
 .user.yml

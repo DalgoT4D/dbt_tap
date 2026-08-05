@@ -1,10 +1,11 @@
 {% test duplicate_messages(
-    model,
-    column_name
+    model
 ) %}
 SELECT
-    *,
-    ROW_NUMBER() over (
+    *
+FROM
+    {{ model }}
+QUALIFY ROW_NUMBER() over (
         PARTITION BY phone,
         enrollment_id,
         msg_profile_id,
@@ -13,8 +14,7 @@ SELECT
         unit,
         activity,
         activity_status
-    ) AS row_no
-FROM
-    {{ model }}
-WHERE
-    row_no > 1 {% endtest %}
+        ORDER BY
+            bq_inserted_at,
+            message_id
+    ) > 1 {% endtest %}

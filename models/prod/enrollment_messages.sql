@@ -4,7 +4,41 @@
 ) }}
 -- this model merges the frappe enrollment data with glific messages table on phone, course, batch, profile_id (if available)
 -- incremental model works on processing the messages table. Only new records are processed every day instead of all of them
-WITH merged_enrollment_messages AS (
+WITH enrollments AS (
+
+    SELECT
+        *,
+        RIGHT(
+            REGEXP_REPLACE(
+                CAST(
+                    phone AS STRING
+                ),
+                r'[^0-9]',
+                ''
+            ),
+            10
+        ) AS phone_key
+    FROM
+        {{ ref("student_enrollments") }}
+),
+messages AS (
+
+    SELECT
+        *,
+        RIGHT(
+            REGEXP_REPLACE(
+                CAST(
+                    contact_phone AS STRING
+                ),
+                r'[^0-9]',
+                ''
+            ),
+            10
+        ) AS contact_phone_key
+    FROM
+        {{ ref("glific_messages_deserialize") }}
+),
+candidate_enrollment_messages AS (
 
     SELECT
         enrollments.student_id,
@@ -54,30 +88,40 @@ WITH merged_enrollment_messages AS (
             WHEN messages.activity_status = 'Activity_Submission' THEN 1
             ELSE 0
         END AS `submitted`,
+        CASE
+            WHEN enrollments.course_id = messages.course_id THEN 1
+            ELSE 2
+        END AS course_match_rank,
+        COUNT(*) over (
+            PARTITION BY messages.id
+        ) AS message_candidate_count
     FROM
-        {{ ref("student_enrollments") }} AS enrollments
-        INNER JOIN {{ ref("glific_messages_deserialize") }} AS messages
-        ON (
+        enrollments
+        INNER JOIN messages
+        ON messages.contact_phone_key = enrollments.phone_key
+        AND (
+            messages.profile_id IS NULL
+            OR enrollments.profile_id IS NULL
+            OR enrollments.profile_id = CAST(
+                messages.profile_id AS STRING
+            )
+        )
+        AND (
+            enrollments.course_id = messages.course_id
+            OR (
+                messages.course_id IS NULL
+                AND enrollments.batch_year >= 2026
+            )
+        )
+        AND (
             (
-                messages.profile_id IS NULL
-                AND CONCAT(
-                    '91',
-                    enrollments.phone
-                ) = messages.contact_phone
-                AND enrollments.course_id = messages.course_id
-                AND enrollments.batch_id = messages.batch_id -- match with second occurence of flow label
+                messages.batch_id IS NOT NULL
+                AND enrollments.batch_id = messages.batch_id -- legacy labels contain batch id
             )
             OR (
-                messages.profile_id IS NOT NULL
-                AND enrollments.profile_id = CAST(
-                    messages.profile_id AS STRING
-                )
-                AND CONCAT(
-                    '91',
-                    enrollments.phone
-                ) = messages.contact_phone
-                AND enrollments.course_id = messages.course_id
-                AND enrollments.batch_id = messages.batch_id -- match with second occurence of flow label
+                messages.batch_id IS NULL
+                AND SAFE_CAST(messages.inserted_at AS DATE) BETWEEN enrollments.batch_start_date
+                AND enrollments.batch_end_date
             )
         )
     WHERE
@@ -93,6 +137,19 @@ AND (
     )
 )
 {% endif %}
+),
+merged_enrollment_messages AS (
+
+    SELECT
+        * EXCEPT (
+            course_match_rank,
+            message_candidate_count
+        )
+    FROM
+        candidate_enrollment_messages
+    WHERE
+        course_match_rank = 1
+        OR message_candidate_count = 1
 ),
 duplicated_merge AS (
     -- this removes the duplicate messages on parameters below
