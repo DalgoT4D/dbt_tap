@@ -46,3 +46,60 @@ models:
       - name: student_name
         tests:
           - not_null
+  - name: teacher_registrations
+    columns:
+      - name: teacher_id
+        tests:
+          - unique
+          - not_null
+      - name: created_year
+        tests:
+          - not_null
+  - name: program_dashboard_2026_kpis
+    columns:
+      - name: metric_key
+        tests:
+          - unique
+          - not_null
+      - name: metric_value
+        tests:
+          - not_null
+  - name: program_dashboard_2026_batch_summary
+    columns:
+      - name: batch_id
+        tests:
+          - unique
+          - not_null
+  - name: program_dashboard_2026_course_summary
+    columns:
+      - name: course_id
+        tests:
+          - unique
+          - not_null
+      - name: course_display_name
+        tests:
+          - not_null
+  - name: program_dashboard_2026_daily_activity
+    columns:
+      - name: activity_date
+        tests:
+          - not_null
+      - name: course_display_name
+        tests:
+          - not_null
+  - name: program_dashboard_2026_glific_daily
+    columns:
+      - name: message_date
+        tests:
+          - not_null
+      - name: course_display_name
+        tests:
+          - not_null
+  - name: program_dashboard_2026_teacher_monthly
+    columns:
+      - name: created_month
+        tests:
+          - not_null
+      - name: teachers_registered
+        tests:
+          - not_null
