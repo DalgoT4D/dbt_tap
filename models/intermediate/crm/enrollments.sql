@@ -6,7 +6,7 @@ SELECT
     enrollment.name AS enrollment_id,
     enrollment.parent AS student_id,
     enrollment.modified AS enrollment_modified,
-    course.name AS course_id,
+    enrollment.course AS course_id,
     course.name1 AS course_name1,
     course.name2 AS course_name2,
     batch.name AS batch_id,
@@ -24,7 +24,7 @@ FROM
     ) }}
     batch
     ON enrollment.batch = batch.name
-    INNER JOIN {{ source(
+    LEFT JOIN {{ source(
         'crm',
         'tabCourse'
     ) }}
@@ -33,3 +33,5 @@ FROM
 WHERE
     parenttype = 'Student'
     AND parentfield = 'enrollment'
+    AND enrollment.course IS NOT NULL
+    AND enrollment.course != ''

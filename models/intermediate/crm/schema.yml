@@ -6,7 +6,7 @@ models:
       - dbt_utils.expression_is_true:
           expression: "LEFT(batch_id, 2) = 'BT'"
       - dbt_utils.expression_is_true:
-              expression: "LEFT(course_id, 2) = 'CR'"
+          expression: "course_id != ''"
     columns:
       - name: enrollment_id
         tests:
@@ -27,4 +27,3 @@ models:
           expression: "LEFT(student_id, 2) = 'ST'"
       - dbt_utils.expression_is_true:
           expression: "LEFT(school_id, 2) = 'SC'"
-          
