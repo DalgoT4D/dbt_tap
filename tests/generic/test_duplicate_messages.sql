@@ -13,8 +13,8 @@ SELECT
         unit,
         activity,
         activity_status
-    ) AS row_no
+    ) AS duplicate_row_no
 FROM
     {{ model }}
-WHERE
-    row_no > 1 {% endtest %}
+QUALIFY
+    duplicate_row_no > 1 {% endtest %}

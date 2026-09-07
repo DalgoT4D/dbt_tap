@@ -22,6 +22,10 @@ models:
   - name: enrollment_messages
     tests: 
       - duplicate_messages
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - message_id
+            - enrollment_id
     columns:
       - name: message_id
         tests:

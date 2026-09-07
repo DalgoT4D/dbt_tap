@@ -1,7 +1,8 @@
 {{ config(
     materialized = "incremental",
-    unique_key = ["phone", "enrollment_id", "msg_profile_id", "course_id", "batch_id", "student_id", "unit", "activity", "activity_status"]
+    unique_key = ["message_id", "enrollment_id"]
 ) }}
+-- depends_on: {{ ref("students") }}
 -- this model merges the frappe enrollment data with glific messages table on phone, course, batch, profile_id (if available)
 -- incremental model works on processing the messages table. Only new records are processed every day instead of all of them
 WITH merged_enrollment_messages AS (
@@ -113,9 +114,38 @@ duplicated_merge AS (
     FROM
         merged_enrollment_messages
 )
+{% if is_incremental() %}
+, existing_messages_with_current_school AS (
+    -- Message rows are incremental, but school attributes can change later.
+    -- Re-emit only stale existing rows so dbt's merge updates them in place.
+    SELECT
+        existing.* REPLACE (
+            students.school_id AS school_id,
+            students.school_name AS school_name,
+            students.school_type AS school_type,
+            students.school_city AS city
+        )
+    FROM
+        {{ this }} AS existing
+        INNER JOIN {{ ref("students") }} AS students
+        ON existing.student_id = students.student_id
+    WHERE
+        existing.school_id IS DISTINCT FROM students.school_id
+        OR existing.school_name IS DISTINCT FROM students.school_name
+        OR existing.school_type IS DISTINCT FROM students.school_type
+        OR existing.city IS DISTINCT FROM students.school_city
+)
+{% endif %}
 SELECT
     *
 FROM
     duplicated_merge
 WHERE
     row_no = 1
+{% if is_incremental() %}
+UNION ALL
+SELECT
+    *
+FROM
+    existing_messages_with_current_school
+{% endif %}
